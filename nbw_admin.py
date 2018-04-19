@@ -6,7 +6,7 @@
 #
 # WARNING! All changes made in this file will be lost!
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, QtWinExtras
 import requests
 import time
 
@@ -126,6 +126,7 @@ class Ui_MainWindow(object):
         self.tableWidget.setColumnCount(5)
         self.tableWidget.setRowCount(0)
         self.tableWidget.setHorizontalHeaderLabels(['Name', 'Type','Amount', 'Time', 'To'])
+        self.tableWidget.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
         header = self.tableWidget.horizontalHeader()
         header.setSectionResizeMode(0, QtWidgets.QHeaderView.Stretch)
         header.setSectionResizeMode(1, QtWidgets.QHeaderView.ResizeToContents)
@@ -141,6 +142,11 @@ class Ui_MainWindow(object):
         self.pushButton_14 = QtWidgets.QPushButton(self.tab_4)
         self.pushButton_14.setGeometry(QtCore.QRect(500, 510, 131, 41))
         self.pushButton_14.setObjectName("pushButton_14")
+        self.comboBox_2 = QtWidgets.QComboBox(self.tab_4)
+        self.comboBox_2.setGeometry(QtCore.QRect(380, 41, 101, 31))
+        self.comboBox_2.setObjectName("comboBox_2")
+        self.comboBox_2.addItem("Student")
+        self.comboBox_2.addItem("Store")
         self.tabWidget.addTab(self.tab_4, "")
 
         self.tab_5 = QtWidgets.QWidget()
@@ -228,7 +234,10 @@ class Ui_MainWindow(object):
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
         self.statusbar.setObjectName("statusbar")
+        app.setWindowIcon(QtGui.QIcon('nblogo.png'))
         MainWindow.setStatusBar(self.statusbar)
+
+        # print(self.tbutton.overlayIcon())
 
         self.retranslateUi(MainWindow)
         self.tabWidget.setCurrentIndex(0)
@@ -237,6 +246,10 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "NBWALLET-ADMIN"))
+        MainWindow.setWindowIcon(QtGui.QIcon("nblogo.png"))
+        self.tbutton = QtWinExtras.QWinTaskbarButton(MainWindow)
+        self.tbutton.setWindow(MainWindow.windowHandle())
+        self.tbutton.setOverlayIcon(QtGui.QIcon('nblogo.png'))
         self.groupBox.setTitle(_translate("MainWindow", "Mode"))
         self.pushButton.setText(_translate("MainWindow", "Add Balance"))
         self.pushButton_2.setText(_translate("MainWindow", "Sub Balance"))
@@ -336,31 +349,64 @@ class Ui_MainWindow(object):
         print("TABLE")
         try:
             id = self.lineEdit_11.text()
-            req = requests.get("https://us-central1-nbwallet-nb.cloudfunctions.net/checkTx?id={id}&type=users"
-                               .format(id=id))
-            print(req)
-            try:
-                req_json = req.json()
-                req_len = len(req_json)
-                self.tableWidget.setRowCount(req_len)
-                # self.tableWidget.setColumnCount(5)
-                for row, item in enumerate(req_json):
-                    print(item)
-                    # for row in range(req_len):
-                        # for column in range(4):
-                    print("ROW: ",row)
-                    self.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(req_json[item]["Name"]))
-                    self.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(req_json[item]["type"]))
-                    self.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem(req_json[item]["amount"]))
-                    self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(self.timestampsimp(req_json[item]["time"])))
-                    self.tableWidget.setItem(row, 4, QtWidgets.QTableWidgetItem(req_json[item]["to"]))
+            type = self.comboBox_2.currentText()
+            if type == 'Student':
+                req = requests.get("https://us-central1-nbwallet-nb.cloudfunctions.net/checkTx?id={id}&type=users"
+                                   .format(id=id))
+                print(req)
+                try:
+                    req_json = req.json()
+                    req_len = len(req_json)
+                    self.tableWidget.setRowCount(req_len)
+                    # self.tableWidget.setColumnCount(5)
+                    for row, item in enumerate(req_json):
+                        print(item)
+                        # for row in range(req_len):
+                            # for column in range(4):
+                        print("ROW: ",row)
+                        self.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(req_json[item]["Name"]))
+                        self.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(req_json[item]["type"]))
+                        self.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem(req_json[item]["amount"]))
+                        self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(self.timestampsimp(req_json[item]["time"])))
+                        self.tableWidget.setItem(row, 4, QtWidgets.QTableWidgetItem(req_json[item]["to"]))
 
-            except:
-                msg = QtWidgets.QMessageBox()
-                msg.setIcon(QtWidgets.QMessageBox.Warning)
-                msg.setWindowTitle("ERROR")
-                msg.setText("FAILED")
-                retval = msg.exec_()
+                except:
+                    msg = QtWidgets.QMessageBox()
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("ERROR")
+                    msg.setText("FAILED")
+                    retval = msg.exec_()
+            else:
+                req = requests.get("https://us-central1-nbwallet-nb.cloudfunctions.net/checkTx?id={id}&type=store"
+                                   .format(id=id))
+                print(req)
+                try:
+                    req_json = req.json()
+                    req_len = len(req_json)
+                    self.tableWidget.setRowCount(req_len)
+                    # self.tableWidget.setColumnCount(5)
+                    self.tableWidget.setHorizontalHeaderLabels(['Name', 'Type', 'Amount', 'Time', 'From'])
+                    for row, item in enumerate(req_json):
+                        print(item)
+                        # for row in range(req_len):
+                            # for column in range(4):
+                        print("ROW: ",row)
+                        self.tableWidget.setItem(row, 0, QtWidgets.QTableWidgetItem(req_json[item]["name"]))
+                        self.tableWidget.setItem(row, 1, QtWidgets.QTableWidgetItem(req_json[item]["type"]))
+                        self.tableWidget.setItem(row, 2, QtWidgets.QTableWidgetItem(req_json[item]["amount"]))
+                        self.tableWidget.setItem(row, 3, QtWidgets.QTableWidgetItem(self.timestampsimp(req_json[item]["time"])))
+                        self.tableWidget.setItem(row, 4, QtWidgets.QTableWidgetItem(req_json[item]["from"]))
+
+                except:
+                    e = sys.exc_info()[0]
+                    e2 = sys.exc_info()[1]
+                    # print(e, e2)
+                    msg = QtWidgets.QMessageBox()
+                    msg.setIcon(QtWidgets.QMessageBox.Warning)
+                    msg.setWindowTitle("ERROR")
+                    msg.setText("{} {}".format(e, e2))
+
+                    retval = msg.exec_()
 
         except:
             e = sys.exc_info()[0]
@@ -523,6 +569,7 @@ if __name__ == "__main__":
     import sys
     import locale
     app = QtWidgets.QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon('nblogo.png'))
     # locale.setlocale(locale.LC_ALL, 'en US')
     # print(QtCore.QLocale())
 
